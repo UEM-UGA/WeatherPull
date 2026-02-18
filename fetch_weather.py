@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import os
 
+# --- CONFIG ---
 LAT, LON = 33.941993, -83.375814
 FILENAME = 'daily_weather_athens.csv'
 
