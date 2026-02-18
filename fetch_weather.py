@@ -3,39 +3,45 @@ import pandas as pd
 from datetime import datetime, timedelta
 import os
 
-FILENAME = 'daily_weather_athens.csv'
+# --- CONFIG ---
 LAT, LON = 33.941993, -83.375814
+FILENAME = 'daily_weather_athens.csv'
 
-def fetch_rich_data():
-    yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
-    
-    # Expanded variable list for Energy Engineering
+def fetch_and_clean():
+    # 1. Target Yesterday
+    target_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+    print(f"[*] Starting Cloud Fetch for: {target_date}")
+
+    # 2. API Request
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
-        "latitude": LAT,
-        "longitude": LON,
-        "hourly": [
-            "temperature_2m", "relative_humidity_2m", "dew_point_2m", 
-            "apparent_temperature", "shortwave_radiation", "direct_normal_irradiance", 
-            "diffuse_radiation", "cloud_cover", "wind_speed_80m", "surface_pressure"
-        ],
-        "temperature_unit": "fahrenheit",
-        "wind_speed_unit": "mph",
-        "timezone": "America/New_York",
-        "past_days": 1,
-        "forecast_days": 0
+        "latitude": LAT, "longitude": LON,
+        "hourly": ["temperature_2m", "relative_humidity_2m", "dew_point_2m", "apparent_temperature", 
+                   "shortwave_radiation", "direct_normal_irradiance", "diffuse_radiation", 
+                   "cloud_cover", "wind_speed_80m", "surface_pressure"],
+        "temperature_unit": "fahrenheit", "wind_speed_unit": "mph",
+        "timezone": "America/New_York", "past_days": 1, "forecast_days": 0
     }
-    
-    response = requests.get(url, params=params)
-    new_df = pd.DataFrame(response.json()['hourly'])
 
-    if not os.path.exists(FILENAME):
-        new_df.to_csv(FILENAME, index=False)
-    else:
-        existing_df = pd.read_csv(FILENAME)
-        if yesterday not in existing_df['time'].values:
-            new_df.to_csv(FILENAME, mode='a', index=False, header=False)
-            print(f"Rich data appended for {yesterday}")
+    try:
+        print(f"[1/3] Requesting data from Open-Meteo...")
+        response = requests.get(url, params=params)
+        print(f"      Server Response: {response.status_code}")
+        response.raise_for_status()
+        
+        # 3. Clean Data (Remove NaN)
+        print("[2/3] Cleaning data (Removing NaN/Nulls)...")
+        df = pd.DataFrame(response.json()['hourly'])
+        df.dropna(inplace=True) # Removes any rows with missing data
+        
+        # 4. Save
+        print(f"[3/3] Saving to {FILENAME}...")
+        df.to_csv(FILENAME, index=False)
+        print("      Success.")
+
+    except Exception as e:
+        print(f"ERROR: {e}")
+        exit(1)
 
 if __name__ == "__main__":
-    fetch_rich_data()
+    fetch_and_clean()
