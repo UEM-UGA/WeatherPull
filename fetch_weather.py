@@ -3,13 +3,16 @@ import pandas as pd
 from datetime import datetime, timedelta
 import os
 
-# --- CONFIG ---
 LAT, LON = 33.941993, -83.375814
-FILENAME = 'daily_weather_athens.csv'
+FOLDER = 'daily_data'
 
-def fetch_and_clean():
+def fetch_and_save():
     target_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
-    print(f"[*] Cloud Fetch Start: {target_date}")
+    filename = f"{FOLDER}/weather_{target_date}.csv"
+    
+    # Ensure folder exists
+    if not os.path.exists(FOLDER):
+        os.makedirs(FOLDER)
 
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
@@ -22,22 +25,20 @@ def fetch_and_clean():
     }
 
     try:
-        print(f"[1/3] Requesting API...")
+        print(f"[*] Fetching: {target_date}")
         response = requests.get(url, params=params)
         print(f"      Response: {response.status_code}")
         response.raise_for_status()
         
-        print("[2/3] Cleaning Data (Removing NaNs)...")
         df = pd.DataFrame(response.json()['hourly'])
-        df.dropna(inplace=True) 
+        df.dropna(inplace=True) # Remove NaNs
         
-        print(f"[3/3] Saving to {FILENAME}...")
-        df.to_csv(FILENAME, index=False)
-        print("      Success.")
+        df.to_csv(filename, index=False)
+        print(f"      Saved: {filename}")
 
     except Exception as e:
         print(f"ERROR: {e}")
         exit(1)
 
 if __name__ == "__main__":
-    fetch_and_clean()
+    fetch_and_save()
