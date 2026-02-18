@@ -3,16 +3,13 @@ import pandas as pd
 from datetime import datetime, timedelta
 import os
 
-# --- CONFIG ---
 LAT, LON = 33.941993, -83.375814
 FILENAME = 'daily_weather_athens.csv'
 
 def fetch_and_clean():
-    # 1. Target Yesterday
     target_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
-    print(f"[*] Starting Cloud Fetch for: {target_date}")
+    print(f"[*] Cloud Fetch Start: {target_date}")
 
-    # 2. API Request
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
         "latitude": LAT, "longitude": LON,
@@ -24,17 +21,15 @@ def fetch_and_clean():
     }
 
     try:
-        print(f"[1/3] Requesting data from Open-Meteo...")
+        print(f"[1/3] Requesting API...")
         response = requests.get(url, params=params)
-        print(f"      Server Response: {response.status_code}")
+        print(f"      Response: {response.status_code}")
         response.raise_for_status()
         
-        # 3. Clean Data (Remove NaN)
-        print("[2/3] Cleaning data (Removing NaN/Nulls)...")
+        print("[2/3] Cleaning Data (Removing NaNs)...")
         df = pd.DataFrame(response.json()['hourly'])
-        df.dropna(inplace=True) # Removes any rows with missing data
+        df.dropna(inplace=True) 
         
-        # 4. Save
         print(f"[3/3] Saving to {FILENAME}...")
         df.to_csv(FILENAME, index=False)
         print("      Success.")
