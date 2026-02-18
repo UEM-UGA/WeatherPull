@@ -26,10 +26,11 @@ jobs:
       - name: Run Fetch Script
         run: python fetch_weather.py
 
-      - name: Commit and Push CSV
+      - name: Commit and Push
         run: |
           git config --global user.name 'WeatherBot'
           git config --global user.email 'actions@github.com'
-          git add daily_weather_athens.csv
-          git commit -m "Auto-update: Daily CSV" || echo "No changes"
+          # TRACK THE WHOLE FOLDER INSTEAD OF ONE FILE
+          git add daily_data/ 
+          git commit -m "Auto-update: Added weather for $(date +%F)" || echo "No changes"
           git push
