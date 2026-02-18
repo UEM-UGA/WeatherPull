@@ -3,7 +3,7 @@ name: Daily Weather Pull
 on:
   schedule:
     # Runs at 11:00 UTC (which is 6:00 AM EST)
-    - cron: '0 11 * * *'
+    - cron: '0 15  * * *'
   workflow_dispatch: # Allows you to run it manually from the Actions tab
 
 permissions:
