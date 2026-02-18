@@ -1,0 +1,37 @@
+name: Daily Weather Pull
+
+on:
+  schedule:
+    # Runs at 11:00 UTC (which is 6:00 AM EST)
+    - cron: '0 11 * * *'
+  workflow_dispatch: # Allows you to run it manually from the Actions tab
+
+permissions:
+  contents: write # IMPORTANT: Allows the bot to save the JSON file
+
+jobs:
+  fetch-and-save:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: pip install requests
+
+      - name: Run Fetch Script
+        run: python fetch_weather.py
+
+      - name: Commit and Push Data
+        run: |
+          git config --global user.name 'WeatherBot'
+          git config --global user.email 'actions@github.com'
+          git add daily_weather_athens.json
+          git commit -m "Auto-update: Daily Weather Forecast" || echo "No changes to commit"
+          git push
