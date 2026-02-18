@@ -2,8 +2,8 @@ name: Daily Weather Pull (CSV)
 
 on:
   schedule:
-    - cron: '0 15 * * *' # Runs daily at 11:00 AM EDT
-  workflow_dispatch: # Allows manual run button
+    - cron: '0 15 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -21,7 +21,7 @@ jobs:
           python-version: '3.9'
 
       - name: Install Dependencies
-        run: pip install requests pandas # This fixes the 'Exit code 1'
+        run: pip install requests pandas
 
       - name: Run Fetch Script
         run: python fetch_weather.py
@@ -31,5 +31,5 @@ jobs:
           git config --global user.name 'WeatherBot'
           git config --global user.email 'actions@github.com'
           git add daily_weather_athens.csv
-          git commit -m "Auto-update: Daily CSV" || echo "No changes to commit"
+          git commit -m "Auto-update: Daily CSV" || echo "No changes"
           git push
