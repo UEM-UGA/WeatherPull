@@ -7,13 +7,18 @@ LAT, LON = 33.941993, -83.375814
 FOLDER = 'daily_data'
 
 def fetch_and_save():
+    # 1. Create the date-based filename
     target_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
     filename = f"{FOLDER}/weather_{target_date}.csv"
     
-    # Ensure folder exists
+    print(f"[*] Target: {target_date}")
+
+    # 2. Ensure the folder exists on the GitHub runner
     if not os.path.exists(FOLDER):
         os.makedirs(FOLDER)
+        print(f"[*] Created folder: {FOLDER}")
 
+    # 3. Request Weather Data
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
         "latitude": LAT, "longitude": LON,
@@ -25,16 +30,18 @@ def fetch_and_save():
     }
 
     try:
-        print(f"[*] Fetching: {target_date}")
+        print(f"[1/3] Fetching data...")
         response = requests.get(url, params=params)
-        print(f"      Response: {response.status_code}")
+        print(f"      Server: {response.status_code}")
         response.raise_for_status()
         
+        print("[2/3] Cleaning data...")
         df = pd.DataFrame(response.json()['hourly'])
-        df.dropna(inplace=True) # Remove NaNs
+        df.dropna(inplace=True) # Remove nulls
         
+        print(f"[3/3] Saving: {filename}")
         df.to_csv(filename, index=False)
-        print(f"      Saved: {filename}")
+        print("      Success.")
 
     except Exception as e:
         print(f"ERROR: {e}")
